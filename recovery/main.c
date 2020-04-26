@@ -5,6 +5,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "ui/main_frame.h"
+
 #define DISP_BUF_SIZE (80*LV_HOR_RES_MAX)
 
 int main(void)
@@ -29,10 +31,8 @@ int main(void)
     disp_drv.flush_cb = fbdev_flush;
     lv_disp_drv_register(&disp_drv);
 
-    /*Create a "Hello world!" label*/
-    lv_obj_t * label = lv_label_create(lv_scr_act(), NULL);
-    lv_label_set_text(label, "Hello world!");
-    lv_obj_align(label, NULL, LV_ALIGN_CENTER, 0, 0);
+    /*Create the UI*/
+    create_main_frame();
 
     /*Handle LitlevGL tasks (tickless mode)*/
     while(1) {

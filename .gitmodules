@@ -1,0 +1,6 @@
+[submodule "desktop/lvgl"]
+	path = desktop/lvgl
+	url = https://github.com/littlevgl/lvgl.git
+[submodule "desktop/lv_drivers"]
+	path = desktop/lv_drivers
+	url = https://github.com/littlevgl/lv_drivers.git
