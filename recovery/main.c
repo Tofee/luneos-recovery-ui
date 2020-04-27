@@ -1,5 +1,6 @@
 #include "lvgl/lvgl.h"
 #include "lv_drivers/display/fbdev.h"
+#include "lv_drivers/indev/evdev.h"
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
@@ -9,6 +10,10 @@
 
 #define DISP_BUF_SIZE (80*LV_HOR_RES_MAX)
 
+#ifndef EVDEV_TOUCH_DEVICE
+#define EVDEV_TOUCH_DEVICE "/dev/input/event1"
+#endif /*EVDEV_TOUCH_DEVICE*/
+
 int main(void)
 {
     /*LittlevGL init*/
@@ -16,6 +21,9 @@ int main(void)
 
     /*Linux frame buffer device init*/
     fbdev_init();
+
+    evdev_init();
+    evdev_set_file(EVDEV_TOUCH_DEVICE);
 
     /*A small buffer for LittlevGL to draw the screen's content*/
     static lv_color_t buf[DISP_BUF_SIZE];
@@ -31,13 +39,21 @@ int main(void)
     disp_drv.flush_cb = fbdev_flush;
     lv_disp_drv_register(&disp_drv);
 
+	/* Initialize and register evdev input device interface */
+	lv_indev_drv_t indev_drv;
+	lv_indev_drv_init(&indev_drv);
+	indev_drv.type = LV_INDEV_TYPE_POINTER;
+	indev_drv.read_cb = evdev_read;
+	lv_indev_drv_register(&indev_drv);
+
     /*Create the UI*/
     create_main_frame();
 
-    /*Handle LitlevGL tasks (tickless mode)*/
+    /*Handle LitlevGL tasks (5ms ticks)*/
     while(1) {
         lv_task_handler();
-        usleep(5000);
+        usleep(5000);    // wait 5ms
+        lv_tick_inc(5);  // inform lvgl that 5ms have passed
     }
 
     return 0;

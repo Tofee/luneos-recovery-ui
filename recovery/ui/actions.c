@@ -6,21 +6,21 @@
 
 #ifndef CONFIGFS_USB_MASS_STORAGE_FILE
 #define CONFIGFS_USB_MASS_STORAGE_FILE "/config/usb_gadget/g1/functions/mass_storage.usb0/lun.0/file"
-#endif //CONFIGFS_USB_MASS_STORAGE_FILE
+#endif /*CONFIGFS_USB_MASS_STORAGE_FILE*/
 #ifndef SDCARD_PATH
 #define SDCARD_PATH "/dev/mmcblk0"
-#endif //SDCARD_PATH
+#endif /*SDCARD_PATH*/
 #ifndef EMMC_PATH
 #define EMMC_PATH "/dev/mmcblk2"
-#endif //EMMC_PATH
+#endif /*EMMC_PATH*/
 
 void event_handler_ChangeMassStorage(lv_obj_t * obj, lv_event_t event)
 {
-    if(event == LV_EVENT_VALUE_CHANGED) {
+    if(event == LV_EVENT_CLICKED) {
         const char * txt = lv_btnm_get_active_btn_text(obj);
         printf("Change USB Mass Storage to: %s\n", txt);
 
-        FILE *f = fopen(CONFIGFS_USB_MASS_STORAGE_FILE, "r");
+        FILE *f = fopen(CONFIGFS_USB_MASS_STORAGE_FILE, "w");
         if(f) {
             if(0 == strcmp(txt, "SDCard")) {
                 fprintf(f, "%s\n", SDCARD_PATH);
