@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/klog.h>
 #include "lvgl/lvgl.h"
 
 #include "actions.h"
@@ -112,5 +114,22 @@ void create_main_frame()
 
     lv_obj_t * labelButtonPowerOff = lv_label_create(btnPowerOff, NULL);
     lv_label_set_text(labelButtonPowerOff, "Power Off");
+
+    /* Dmesg log */
+    int len = klogctl(10, NULL, 0); /* read ring buffer size */
+    if (len < 16*1024)
+        len = 16*1024;
+    if (len > 16*1024*1024)
+        len = 16*1024*1024;
+    char *dmesg_buf = malloc(len);
+    len = klogctl(3, dmesg_buf, len); /* read ring buffer */
+    if (len<0) sprintf(dmesg_buf, "Kernel message empty or access forbidden.");
+
+    lv_obj_t * dmesgTextArea = lv_ta_create(h, NULL);
+    lv_obj_set_size(dmesgTextArea, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/6);
+    lv_obj_align(dmesgTextArea, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_ta_set_text(dmesgTextArea, dmesg_buf);    /*Set an initial text*/
+
+    free(dmesg_buf);
 }
 
