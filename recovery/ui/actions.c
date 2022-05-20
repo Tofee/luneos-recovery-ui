@@ -14,41 +14,37 @@
 #define EMMC_PATH "/dev/mmcblk2"
 #endif /*EMMC_PATH*/
 
-void event_handler_ChangeMassStorage(lv_obj_t * obj, lv_event_t event)
+void event_handler_ChangeMassStorage(lv_event_t *e)
 {
-    if(event == LV_EVENT_CLICKED) {
-        const char * txt = lv_btnm_get_active_btn_text(obj);
-        printf("Change USB Mass Storage to: %s\n", txt);
+    lv_obj_t * obj = lv_event_get_target(e);
+    uint16_t btnId = lv_btnmatrix_get_selected_btn(obj);
+    const char * txt = lv_btnmatrix_get_btn_text(obj, btnId);
+    printf("Change USB Mass Storage to: %s\n", txt);
 
-        FILE *f = fopen(CONFIGFS_USB_MASS_STORAGE_FILE, "w");
-        if(f) {
-            if(0 == strcmp(txt, "SDCard")) {
-                fprintf(f, "%s\n", SDCARD_PATH);
-            }
-            else if(0 == strcmp(txt, "eMMC")) {
-                fprintf(f, "%s\n", EMMC_PATH);
-            }
-            fclose(f); f = NULL;
+    FILE *f = fopen(CONFIGFS_USB_MASS_STORAGE_FILE, "w");
+    if(f) {
+        if(0 == strcmp(txt, "SDCard")) {
+            fprintf(f, "%s\n", SDCARD_PATH);
         }
+        else if(0 == strcmp(txt, "eMMC")) {
+            fprintf(f, "%s\n", EMMC_PATH);
+        }
+        fclose(f); f = NULL;
     }
 }
 
-void event_handler_Reboot(lv_obj_t * obj, lv_event_t event)
+void event_handler_Reboot(lv_event_t *e)
 {
-    if(obj && event == LV_EVENT_CLICKED) {
-        printf("Reboot !\n");
+    printf("Reboot !\n");
 
-        sync();
-        reboot(RB_AUTOBOOT);
-    }
+    sync();
+    reboot(RB_AUTOBOOT);
 }
 
-void event_handler_Poweroff(lv_obj_t * obj, lv_event_t event)
+void event_handler_Poweroff(lv_event_t *e)
 {
-    if(obj && event == LV_EVENT_CLICKED) {
-        printf("Power Off !\n");
+    printf("Power Off !\n");
 
-        sync();
-        reboot(RB_POWER_OFF);
-    }
+    sync();
+    reboot(RB_POWER_OFF);
 }

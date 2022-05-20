@@ -9,6 +9,6 @@ include_directories(".")
 file(GLOB_RECURSE UI_FILES "ui/*.h" "ui/*.c" )
 
 add_executable(luneos_recovery_ui main.c ${UI_FILES})
-target_link_libraries(luneos_recovery_ui liblvgl.a libdrivers.a)
+target_link_libraries(luneos_recovery_ui liblvgl.a liblv_drivers.a)
 
 install(TARGETS luneos_recovery_ui RUNTIME)

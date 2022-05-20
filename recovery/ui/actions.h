@@ -2,8 +2,8 @@
 #define ACTIONS_H
 /* clang-format off */
 
-void event_handler_ChangeMassStorage(lv_obj_t * obj, lv_event_t event);
-void event_handler_Reboot(lv_obj_t * obj, lv_event_t event);
-void event_handler_Poweroff(lv_obj_t * obj, lv_event_t event);
+void event_handler_ChangeMassStorage(lv_event_t *e);
+void event_handler_Reboot(lv_event_t *e);
+void event_handler_Poweroff(lv_event_t *e);
 
 #endif /* ACTIONS_H */
