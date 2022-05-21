@@ -8,7 +8,7 @@
 
 #include "ui/main_frame.h"
 
-#define DISP_BUF_SIZE (80*LV_HOR_RES_MAX)
+#define DISP_BUF_SIZE (1440*720/10) /* about 10% of screen size should be enough*/
 
 #ifndef EVDEV_TOUCH_DEVICE
 #define EVDEV_TOUCH_DEVICE "/dev/input/event1"
@@ -28,19 +28,20 @@ int main(void)
     /*A small buffer for LittlevGL to draw the screen's content*/
     static lv_color_t buf[DISP_BUF_SIZE];
 
-    /*Initialize a descriptor for the buffer*/
-    static lv_disp_buf_t disp_buf;
-    lv_disp_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
+    /*Initialize the display buffer.*/
+    static lv_disp_draw_buf_t draw_buf;
+    lv_disp_draw_buf_init(&draw_buf, buf, NULL, DISP_BUF_SIZE);
 
     /*Initialize and register a display driver*/
-    lv_disp_drv_t disp_drv;
+    static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
-    disp_drv.buffer = &disp_buf;
+    disp_drv.draw_buf = &draw_buf;
+    fbdev_get_sizes(&disp_drv.hor_res, &disp_drv.ver_res);
     disp_drv.flush_cb = fbdev_flush;
     lv_disp_drv_register(&disp_drv);
 
 	/* Initialize and register evdev input device interface */
-	lv_indev_drv_t indev_drv;
+    static lv_indev_drv_t indev_drv;
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.type = LV_INDEV_TYPE_POINTER;
 	indev_drv.read_cb = evdev_read;

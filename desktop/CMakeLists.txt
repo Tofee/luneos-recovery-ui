@@ -11,6 +11,8 @@ file(GLOB_RECURSE SOURCES  "*.c" "../recovery/ui/*.c" )
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin) 
 
+add_compile_definitions(LV_CONF_INCLUDE_SIMPLE=1)
+
 find_package(SDL2 REQUIRED SDL2)
 include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(luneos-recovery-ui ${SOURCES} ${INCLUDES})

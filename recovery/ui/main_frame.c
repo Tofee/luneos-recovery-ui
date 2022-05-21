@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/klog.h>
 #include "lvgl/lvgl.h"
 
 #include "actions.h"
@@ -10,31 +7,32 @@ LV_FONT_DECLARE(Prelude_40);
 
 void create_main_frame()
 {
-    lv_theme_t * th = lv_theme_night_init(210, &Prelude_40);     //Set a HUE value and a Font for the Night Theme
-    lv_theme_set_current(th);                                           //Apply the theme
-
-    lv_obj_t * scr = lv_cont_create(NULL, NULL);
+    lv_obj_t * scr = lv_obj_create(NULL);
     lv_disp_load_scr(scr);
 
     static lv_style_t h_style;
-    lv_style_copy(&h_style, &lv_style_transp_fit);
-    h_style.body.padding.inner = LV_DPI / 10;
-    h_style.body.padding.left = LV_DPI / 4;
-    h_style.body.padding.right = LV_DPI / 4;
-    h_style.body.padding.top = LV_DPI / 10;
-    h_style.body.padding.bottom = LV_DPI / 10;
+    lv_style_init(&h_style);
+    lv_style_set_pad_all(&h_style, 10);
 
-    lv_obj_t * h = lv_cont_create(scr, NULL);
-    lv_obj_set_style(h, &h_style);
-    lv_obj_set_click(h, false);
-    lv_cont_set_fit(h, LV_FIT_FILL);
-    lv_cont_set_layout(h, LV_LAYOUT_COL_M);
+    lv_obj_t * h = lv_obj_create(scr);
+    lv_obj_add_style(h, &h_style, 0);
+    lv_obj_set_size(h, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_flex_flow(h, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(h, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    static lv_style_t text_prelude20_style;
+    lv_style_init(&text_prelude20_style);
+    lv_style_set_text_font(&text_prelude20_style, &Prelude_20);
+
+    static lv_style_t text_prelude40_style;
+    lv_style_init(&text_prelude40_style);
+    lv_style_set_text_font(&text_prelude40_style, &Prelude_40);
 
     /*Label for selecting which storage is exposed as usb mass storage*/
-    lv_obj_t * label = lv_label_create(h, NULL);
+    lv_obj_t * label = lv_label_create(h);
+    lv_obj_add_style(label, &text_prelude40_style, 0);
     lv_label_set_text(label, "Current USB Mass Storage");
-    lv_obj_align(label, NULL, LV_ALIGN_CENTER, 0, 0);
-
+/*
     static lv_style_t h_style_btnm_pressed;
     lv_style_copy(&h_style_btnm_pressed, th->style.btnm.btn.pr);
     h_style_btnm_pressed.body.grad_color = lv_color_make(10, 30, 120);
@@ -48,34 +46,30 @@ void create_main_frame()
     static lv_style_t h_style_btnm_bg;
     lv_style_copy(&h_style_btnm_bg, th->style.btnm.bg);
     h_style_btnm_bg.body.padding.bottom = LV_DPI*2;
-
+*/
     static const char * btnm_str[] = {"SDCard", "\n", "eMMC", ""};
-    lv_obj_t * btnm = lv_btnm_create(h, NULL);
-    lv_obj_set_size(btnm, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/4);
-    lv_btnm_set_map(btnm, btnm_str);
+    lv_obj_t * btnm = lv_btnmatrix_create(h);
+    lv_obj_set_size(btnm, LV_PCT(100), lv_disp_get_ver_res(NULL)/4);
+    lv_obj_add_style(btnm, &text_prelude40_style, 0);
+    lv_btnmatrix_set_map(btnm, btnm_str);
+    /*Allow selecting on one number at time*/
+    lv_btnmatrix_set_btn_ctrl_all(btnm, LV_BTNMATRIX_CTRL_CHECKABLE);
+    lv_btnmatrix_set_one_checked(btnm, true);
+    lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
+    lv_obj_add_event_cb(btnm, event_handler_ChangeMassStorage, LV_EVENT_VALUE_CHANGED, NULL);
+
+/*
     lv_btnm_set_style(btnm, LV_BTNM_STYLE_BTN_TGL_REL, &h_style_btnm_rel);
     lv_btnm_set_style(btnm, LV_BTNM_STYLE_BTN_PR, &h_style_btnm_pressed);
-    lv_btnm_set_btn_ctrl_all(btnm, LV_BTNM_CTRL_TGL_ENABLE);
-    lv_btnm_set_one_toggle(btnm, true);
-    lv_btnm_set_btn_ctrl(btnm, 0, LV_BTNM_CTRL_TGL_STATE);
-    lv_obj_set_event_cb(btnm, event_handler_ChangeMassStorage);
-
-    static lv_style_t spacer_style;
-    lv_style_copy(&spacer_style, &lv_style_transp_fit);
-    h_style.body.padding.inner = LV_DPI / 10;
-    h_style.body.padding.top = LV_DPI / 10;
-    h_style.body.padding.bottom = LV_DPI / 10;
-
-    lv_obj_t * spacer_cont = lv_cont_create(h, NULL);
-    lv_obj_set_style(spacer_cont, &h_style);
-    lv_obj_set_click(spacer_cont, false);
+*/
 
     /*label for actions*/
-    lv_obj_t * label2 = lv_label_create(h, NULL);
+    lv_obj_t * label2 = lv_label_create(h);
+    lv_obj_add_style(label2, &text_prelude40_style, 0);
     lv_label_set_text(label2, "Actions");
-    lv_obj_align(label2, NULL, LV_ALIGN_CENTER, 0, 0);
 
     /* Reboot */
+/*
     static lv_style_t h_style_btn_reboot_rel;
     lv_style_copy(&h_style_btn_reboot_rel, th->style.btn.rel);
     h_style_btn_reboot_rel.body.main_color = lv_color_mix(LV_COLOR_YELLOW, LV_COLOR_BLACK, 200);
@@ -84,18 +78,21 @@ void create_main_frame()
     lv_style_copy(&h_style_btn_reboot_pr, th->style.btn.pr);
     h_style_btn_reboot_pr.body.main_color = lv_color_mix(LV_COLOR_YELLOW, LV_COLOR_BLACK, 80);
     h_style_btn_reboot_pr.body.grad_color = lv_color_mix(LV_COLOR_YELLOW, LV_COLOR_BLACK, 120);
-
-    lv_obj_t * btnReboot = lv_btn_create(h, NULL);
-    lv_obj_set_size(btnReboot, lv_disp_get_hor_res(NULL)/2, lv_disp_get_ver_res(NULL)/6);
-    lv_obj_set_event_cb(btnReboot, event_handler_Reboot);
-    lv_obj_align(btnReboot, NULL, LV_ALIGN_CENTER, 0, 0);
+*/
+    lv_obj_t * btnReboot = lv_btn_create(h);
+    lv_obj_set_size(btnReboot, LV_PCT(50), LV_PCT(15));
+    lv_obj_add_event_cb(btnReboot, event_handler_Reboot, LV_EVENT_CLICKED, NULL);
+/*
     lv_btn_set_style(btnReboot, LV_BTN_STYLE_REL, &h_style_btn_reboot_rel);
     lv_btn_set_style(btnReboot, LV_BTN_STYLE_PR, &h_style_btn_reboot_pr);
-
-    lv_obj_t * labelButtonReboot = lv_label_create(btnReboot, NULL);
+*/
+    lv_obj_t * labelButtonReboot = lv_label_create(btnReboot);
+    lv_obj_add_style(labelButtonReboot, &text_prelude40_style, 0);
     lv_label_set_text(labelButtonReboot, "Reboot");
+    lv_obj_center(labelButtonReboot);
 
     /* Power Off */
+/*
     static lv_style_t h_style_btn_poweroff_rel;
     lv_style_copy(&h_style_btn_poweroff_rel, th->style.btn.rel);
     h_style_btn_poweroff_rel.body.main_color = lv_color_mix(LV_COLOR_RED, LV_COLOR_BLACK, 200);
@@ -104,32 +101,26 @@ void create_main_frame()
     lv_style_copy(&h_style_btn_poweroff_pr, th->style.btn.pr);
     h_style_btn_poweroff_pr.body.main_color = lv_color_mix(LV_COLOR_RED, LV_COLOR_BLACK, 80);
     h_style_btn_poweroff_pr.body.grad_color = lv_color_mix(LV_COLOR_RED, LV_COLOR_BLACK, 120);
-
-    lv_obj_t * btnPowerOff = lv_btn_create(h, NULL);
-    lv_obj_set_size(btnPowerOff, lv_disp_get_hor_res(NULL)/2, lv_disp_get_ver_res(NULL)/6);
-    lv_obj_set_event_cb(btnPowerOff, event_handler_Poweroff);
-    lv_obj_align(btnPowerOff, NULL, LV_ALIGN_CENTER, 0, 0);
+*/
+    lv_obj_t * btnPowerOff = lv_btn_create(h);
+    lv_obj_set_size(btnPowerOff, LV_PCT(50), LV_PCT(15));
+    lv_obj_add_event_cb(btnPowerOff, event_handler_Poweroff, LV_EVENT_CLICKED, NULL);
+/*
     lv_btn_set_style(btnPowerOff, LV_BTN_STYLE_REL, &h_style_btn_poweroff_rel);
     lv_btn_set_style(btnPowerOff, LV_BTN_STYLE_PR, &h_style_btn_poweroff_pr);
-
-    lv_obj_t * labelButtonPowerOff = lv_label_create(btnPowerOff, NULL);
+*/
+    lv_obj_t * labelButtonPowerOff = lv_label_create(btnPowerOff);
+    lv_obj_add_style(labelButtonPowerOff, &text_prelude40_style, 0);
     lv_label_set_text(labelButtonPowerOff, "Power Off");
+    lv_obj_center(labelButtonPowerOff);
 
-    /* Dmesg log */
-    int len = klogctl(10, NULL, 0); /* read ring buffer size */
-    if (len < 16*1024)
-        len = 16*1024;
-    if (len > 16*1024*1024)
-        len = 16*1024*1024;
-    char *dmesg_buf = malloc(len);
-    len = klogctl(3, dmesg_buf, len); /* read ring buffer */
-    if (len<0) sprintf(dmesg_buf, "Kernel message empty or access forbidden.");
+    /* Kernel's dmesg */
 
-    lv_obj_t * dmesgTextArea = lv_ta_create(h, NULL);
-    lv_obj_set_size(dmesgTextArea, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL)/6);
-    lv_obj_align(dmesgTextArea, NULL, LV_ALIGN_CENTER, 0, 0);
-    lv_ta_set_text(dmesgTextArea, dmesg_buf);    /*Set an initial text*/
+    lv_obj_t * dmesgTextArea = lv_textarea_create(h);
+    lv_obj_add_style(dmesgTextArea, &text_prelude20_style, 0);
+    lv_obj_set_size(dmesgTextArea, LV_PCT(100), lv_disp_get_ver_res(NULL)/6);
+    lv_obj_set_flex_grow(dmesgTextArea, 1);
 
-    free(dmesg_buf);
+    lv_timer_create(event_handler_refresh_dmesg, 5000, dmesgTextArea);
 }
 
