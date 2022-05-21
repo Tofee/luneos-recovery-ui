@@ -1,17 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/klog.h>
-
 #include "lvgl/lvgl.h"
 
 #include "actions.h"
 
+LV_FONT_DECLARE(Prelude_20);
 LV_FONT_DECLARE(Prelude_40);
 
 void create_main_frame()
 {
     lv_obj_t * scr = lv_obj_create(NULL);
-    lv_obj_set_size(scr, LV_PCT(100), LV_PCT(100));
     lv_disp_load_scr(scr);
 
     static lv_style_t h_style;
@@ -23,6 +19,10 @@ void create_main_frame()
     lv_obj_set_size(h, LV_PCT(100), LV_PCT(100));
     lv_obj_set_flex_flow(h, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(h, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    static lv_style_t text_prelude20_style;
+    lv_style_init(&text_prelude20_style);
+    lv_style_set_text_font(&text_prelude20_style, &Prelude_20);
 
     static lv_style_t text_prelude40_style;
     lv_style_init(&text_prelude40_style);
@@ -50,6 +50,7 @@ void create_main_frame()
     static const char * btnm_str[] = {"SDCard", "\n", "eMMC", ""};
     lv_obj_t * btnm = lv_btnmatrix_create(h);
     lv_obj_set_size(btnm, LV_PCT(100), lv_disp_get_ver_res(NULL)/4);
+    lv_obj_add_style(btnm, &text_prelude40_style, 0);
     lv_btnmatrix_set_map(btnm, btnm_str);
     /*Allow selecting on one number at time*/
     lv_btnmatrix_set_btn_ctrl_all(btnm, LV_BTNMATRIX_CTRL_CHECKABLE);
@@ -86,6 +87,7 @@ void create_main_frame()
     lv_btn_set_style(btnReboot, LV_BTN_STYLE_PR, &h_style_btn_reboot_pr);
 */
     lv_obj_t * labelButtonReboot = lv_label_create(btnReboot);
+    lv_obj_add_style(labelButtonReboot, &text_prelude40_style, 0);
     lv_label_set_text(labelButtonReboot, "Reboot");
     lv_obj_center(labelButtonReboot);
 
@@ -108,24 +110,17 @@ void create_main_frame()
     lv_btn_set_style(btnPowerOff, LV_BTN_STYLE_PR, &h_style_btn_poweroff_pr);
 */
     lv_obj_t * labelButtonPowerOff = lv_label_create(btnPowerOff);
+    lv_obj_add_style(labelButtonPowerOff, &text_prelude40_style, 0);
     lv_label_set_text(labelButtonPowerOff, "Power Off");
     lv_obj_center(labelButtonPowerOff);
 
-    /* Dmesg log */
-    int len = klogctl(10, NULL, 0); /* read ring buffer size */
-    if (len < 16*1024)
-        len = 16*1024;
-    if (len > 16*1024*1024)
-        len = 16*1024*1024;
-    char *dmesg_buf = malloc(len);
-    len = klogctl(3, dmesg_buf, len); /* read ring buffer */
-    if (len<0) sprintf(dmesg_buf, "Kernel message empty or access forbidden.");
+    /* Kernel's dmesg */
 
     lv_obj_t * dmesgTextArea = lv_textarea_create(h);
+    lv_obj_add_style(dmesgTextArea, &text_prelude20_style, 0);
     lv_obj_set_size(dmesgTextArea, LV_PCT(100), lv_disp_get_ver_res(NULL)/6);
-    lv_textarea_set_text(dmesgTextArea, dmesg_buf);    /*Set an initial text*/
     lv_obj_set_flex_grow(dmesgTextArea, 1);
 
-    free(dmesg_buf);
+    lv_timer_create(event_handler_refresh_dmesg, 5000, dmesgTextArea);
 }
 

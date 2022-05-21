@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+
 #include <sys/reboot.h>
+#include <sys/klog.h>
 
 #include "lvgl/lvgl.h"
 
@@ -47,4 +50,25 @@ void event_handler_Poweroff(lv_event_t *e)
 
     sync();
     reboot(RB_POWER_OFF);
+}
+
+void event_handler_refresh_dmesg(lv_timer_t * t)
+{
+    lv_obj_t *dmesgTextArea = t->user_data;
+    if (!dmesgTextArea) return;
+
+    /* Dmesg log */
+    int len = klogctl(10, NULL, 0); /* read ring buffer size */
+    if (len < 16*1024)
+        len = 16*1024;
+    if (len > 16*1024*1024)
+        len = 16*1024*1024;
+    char *dmesg_buf = malloc(len);
+    len = klogctl(3, dmesg_buf, len); /* read ring buffer */
+    if (len<0) sprintf(dmesg_buf, "Kernel message empty or access forbidden.");
+
+    lv_textarea_set_text(dmesgTextArea, dmesg_buf);    /*Set an initial text*/
+
+    free(dmesg_buf);
+
 }
