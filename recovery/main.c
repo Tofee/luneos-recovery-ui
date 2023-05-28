@@ -36,7 +36,8 @@ int main(void)
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.draw_buf = &draw_buf;
-    fbdev_get_sizes(&disp_drv.hor_res, &disp_drv.ver_res);
+    uint32_t dpi;
+    fbdev_get_sizes(&disp_drv.hor_res, &disp_drv.ver_res, &dpi);
     disp_drv.flush_cb = fbdev_flush;
     lv_disp_drv_register(&disp_drv);
 
@@ -54,7 +55,6 @@ int main(void)
     while(1) {
         lv_task_handler();
         usleep(5000);    // wait 5ms
-        lv_tick_inc(5);  // inform lvgl that 5ms have passed
     }
 
     return 0;
