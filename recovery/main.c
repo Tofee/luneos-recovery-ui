@@ -11,7 +11,7 @@
 #define DISP_BUF_SIZE (1440*720/10) /* about 10% of screen size should be enough*/
 
 #ifndef EVDEV_TOUCH_DEVICE
-#define EVDEV_TOUCH_DEVICE "/dev/input/event1"
+#define EVDEV_TOUCH_DEVICE "/dev/input/touchscreen0"
 #endif /*EVDEV_TOUCH_DEVICE*/
 
 int main(void)
