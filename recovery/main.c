@@ -1,6 +1,5 @@
 #include "lvgl/lvgl.h"
-#include "lv_drivers/display/fbdev.h"
-#include "lv_drivers/indev/evdev.h"
+
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
@@ -19,33 +18,18 @@ int main(void)
     /*LittlevGL init*/
     lv_init();
 
-    /*Linux frame buffer device init*/
-    fbdev_init();
 
-    evdev_init();
-    evdev_set_file(EVDEV_TOUCH_DEVICE);
+    /*Linux frame buffer device init*/
+    lv_display_t *disp = lv_linux_fbdev_create();
+    lv_linux_fbdev_set_file(disp, "/dev/fb0");
+
+    lv_evdev_create(LV_INDEV_TYPE_POINTER, EVDEV_TOUCH_DEVICE);
 
     /*A small buffer for LittlevGL to draw the screen's content*/
     static lv_color_t buf[DISP_BUF_SIZE];
 
     /*Initialize the display buffer.*/
-    static lv_disp_draw_buf_t draw_buf;
-    lv_disp_draw_buf_init(&draw_buf, buf, NULL, DISP_BUF_SIZE);
-
-    /*Initialize and register a display driver*/
-    static lv_disp_drv_t disp_drv;
-    lv_disp_drv_init(&disp_drv);
-    disp_drv.draw_buf = &draw_buf;
-    fbdev_get_sizes(&disp_drv.hor_res, &disp_drv.ver_res);
-    disp_drv.flush_cb = fbdev_flush;
-    lv_disp_drv_register(&disp_drv);
-
-	/* Initialize and register evdev input device interface */
-    static lv_indev_drv_t indev_drv;
-	lv_indev_drv_init(&indev_drv);
-	indev_drv.type = LV_INDEV_TYPE_POINTER;
-	indev_drv.read_cb = evdev_read;
-	lv_indev_drv_register(&indev_drv);
+    lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     /*Create the UI*/
     create_main_frame();
@@ -54,7 +38,6 @@ int main(void)
     while(1) {
         lv_task_handler();
         usleep(5000);    // wait 5ms
-        lv_tick_inc(5);  // inform lvgl that 5ms have passed
     }
 
     return 0;
