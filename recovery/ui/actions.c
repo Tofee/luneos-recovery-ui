@@ -54,7 +54,7 @@ void event_handler_Poweroff(lv_event_t *e)
 
 void event_handler_refresh_dmesg(lv_timer_t * t)
 {
-    lv_obj_t *dmesgTextArea = t->user_data;
+    lv_obj_t *dmesgTextArea = lv_timer_get_user_data(t);
     if (!dmesgTextArea) return;
 
     /* Dmesg log */
